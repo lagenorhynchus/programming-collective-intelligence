@@ -10,7 +10,7 @@ critics = {
     'Gene Seymour': {'Lady in the Water': 3.0, 'Snakes on a Plane': 3.5,
                      'Just My Luck': 1.5, 'Superman Returns': 5.0,
                      'The Night Listener': 3.0, 'You, Me and Dupree': 3.5},
-    'Michael Phillips': {'Lady in the Water': 2.5, ' Snakes on a Plane': 3.0,
+    'Michael Phillips': {'Lady in the Water': 2.5, 'Snakes on a Plane': 3.0,
                          'Superman Returns': 3.5, 'The Night Listener': 4.0},
     'Claudia Puig': {'Snakes on a Plane': 3.5, 'Just My Luck': 3.0,
                      'The Night Listener': 4.5, 'Superman Returns': 4.0,
@@ -70,3 +70,26 @@ def top_matches(prefs, person, n=5, similarity=sim_pearson):
     scores = [(similarity(prefs, person, other), other)
               for other in prefs if other != person]
     return list(reversed(sorted(scores)))[:n]
+
+
+def get_recommendations(prefs, person, similarity=sim_pearson):
+    totals = {}
+    sim_sums = {}
+    for other in prefs:
+        if other == person:
+            continue
+
+        sim = similarity(prefs, person, other)
+        if sim <= 0:
+            continue
+
+        for item in prefs[other]:
+            if item not in prefs[person] or prefs[person][item] == 0:
+                totals.setdefault(item, 0)
+                totals[item] += prefs[other][item] * sim
+                sim_sums.setdefault(item, 0)
+                sim_sums[item] += sim
+
+    rankings = [(total / sim_sums[item], item)
+                for item, total in totals.items()]
+    return list(reversed(sorted(rankings)))
